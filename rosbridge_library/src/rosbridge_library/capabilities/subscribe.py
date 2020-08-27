@@ -36,7 +36,7 @@ PYTHON2 = sys.version_info < (3, 0)
 import fnmatch
 from threading import Lock
 from functools import partial
-from rospy import loginfo
+from rospy import loginfo, get_rostime
 from rosbridge_library.capability import Capability
 from rosbridge_library.internal.subscribers import manager
 from rosbridge_library.internal.subscription_modifiers import MessageHandler
@@ -87,7 +87,7 @@ class Subscription():
         """ Unsubscribes this subscription and cleans up resources """
         manager.unsubscribe(self.client_id, self.topic)
         with self.handler_lock:
-            self.handler.finish()
+            self.handler.finish(block=False)
         self.clients.clear()
 
     def subscribe(self, sid=None, msg_type=None, throttle_rate=0,
@@ -122,6 +122,9 @@ class Subscription():
         self.clients[sid] = client_details
 
         self.update_params()
+
+        if compression == "cbor-raw":
+            msg_type = "__AnyMsg"
 
         # Subscribe with the manager. This will propagate any exceptions
         manager.subscribe(self.client_id, self.topic, self.on_msg, msg_type)
@@ -187,6 +190,8 @@ class Subscription():
             self.compression = "png"
         if "cbor" in f("compression"):
             self.compression = "cbor"
+        if "cbor-raw" in f("compression"):
+            self.compression = "cbor-raw"
 
         with self.handler_lock:
             self.handler = self.handler.set_throttle_rate(self.throttle_rate)
@@ -313,7 +318,7 @@ class Subscribe(Capability):
             self.protocol.log("debug", "No topic security glob, not checking topic publish.")
 
         if PYTHON2:
-            topic = unicode(topic)
+            topic = unicode(topic)  # noqa: F821
 
         outgoing_msg = {u"op": u"publish", u"topic": topic}
         if compression=="png":
@@ -322,6 +327,14 @@ class Subscribe(Capability):
             outgoing_msg = {"op": "png", "data": encode_png(outgoing_msg_dumped)}
         elif compression=="cbor":
             outgoing_msg[u"msg"] = message.get_cbor_values()
+            outgoing_msg = bytearray(encode_cbor(outgoing_msg))
+        elif compression=="cbor-raw":
+            now = get_rostime()
+            outgoing_msg[u"msg"] = {
+                u"secs": now.secs,
+                u"nsecs": now.nsecs,
+                u"bytes": message._message._buff
+            }
             outgoing_msg = bytearray(encode_cbor(outgoing_msg))
         else:
             outgoing_msg["msg"] = message.get_json_values()

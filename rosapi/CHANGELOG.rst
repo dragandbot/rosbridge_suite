@@ -2,6 +2,52 @@
 Changelog for package rosapi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.9 (2020-05-27)
+-------------------
+
+0.11.8 (2020-05-21)
+-------------------
+
+0.11.7 (2020-05-13)
+-------------------
+
+0.11.6 (2020-04-29)
+-------------------
+
+0.11.5 (2020-04-08)
+-------------------
+* Python 3 updates/fixes (`#460 <https://github.com/RobotWebTools/rosbridge_suite/issues/460>`_)
+  * rosbridge_library, rosbridge_server: Update package format
+  Add Python3 conditional dependencies where applicable.
+  * rosbridge_library: Fix pngcompression for Python 3
+  * rosapi: Use catkin_install_python for scripts
+* Contributors: Alexey Rogachevskiy
+
+0.11.4 (2020-02-20)
+-------------------
+* Add cbor-raw compression (`#452 <https://github.com/RobotWebTools/rosbridge_suite/issues/452>`_)
+  The CBOR compression is already a huge win over JSON or PNG encoding,
+  but it’s still suboptimal in some situations. This PR adds support for
+  getting messages in their raw binary (ROS-serialized) format. This has
+  benefits in the following cases:
+  - Your application already knows how to parse messages in bag files
+  (e.g. using [rosbag.js](https://github.com/cruise-automation/rosbag.js),
+  which means that now you can use consistent code paths for both bags
+  and live messages.
+  - You want to parse messages as late as possible, or in parallel, e.g.
+  only in the thread or WebWorker that cares about the message. Delaying
+  the parsing of the message means that moving or copying the message to
+  the thread is cheaper when its in binary form, since no serialization
+  between threads is necessary.
+  - You only care about part of the message, and don't need to parse the
+  rest of it.
+  - You really care about performance; no conversion between the ROS
+  binary format and CBOR is done in the rosbridge_sever.
+* Fix rosapi get_action_servers (`#429 <https://github.com/RobotWebTools/rosbridge_suite/issues/429>`_)
+  The currently used proxy.get_topics function does not exists and results in the following error: `"AttributeError: 'module' object has no attribute 'get_topics'\n"`
+  This change uses the existing `get_topics_and_types` method to get a list of topics.
+* Contributors: Jan Paul Posma, Jørgen Borgesen
+
 0.11.3 (2019-08-07)
 -------------------
 * Travis CI: Look for Python syntax errors and undefined name (`#420 <https://github.com/RobotWebTools/rosbridge_suite/issues/420>`_)

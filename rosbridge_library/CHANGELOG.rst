@@ -2,6 +2,82 @@
 Changelog for package rosbridge_library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.9 (2020-05-27)
+-------------------
+* noetic tests and fixes (`#503 <https://github.com/RobotWebTools/rosbridge_suite/issues/503>`_)
+* Contributors: Matt Vollrath
+
+0.11.8 (2020-05-21)
+-------------------
+
+0.11.7 (2020-05-13)
+-------------------
+* Fix backpressure deadlock (`#496 <https://github.com/RobotWebTools/rosbridge_suite/issues/496>`_)
+  * Don't block Subscription.unregister()
+  * Don't add messages to finished queue handler
+  * Decouple incoming WS handling from server thread
+* Contributors: Matt Vollrath
+
+0.11.6 (2020-04-29)
+-------------------
+
+0.11.5 (2020-04-08)
+-------------------
+* Add script for dockerized development shell (`#479 <https://github.com/RobotWebTools/rosbridge_suite/issues/479>`_)
+  * Add script for dockerized development shell
+  * Fix queue dropping test
+* Subscriber concurrency review (`#478 <https://github.com/RobotWebTools/rosbridge_suite/issues/478>`_)
+  * Lock access to SubscriberManager public methods
+  Prevent subscribe during unsubscribe critical section.
+  * Unsubscribing an unsubscribed topic is an error
+  This branch must not be ignored.
+  * Cleanup some redundant syntax in subscribers impl
+* Fix queue blocking (`#464 <https://github.com/RobotWebTools/rosbridge_suite/issues/464>`_)
+  * Unblock QueueMessageHandler.handle_message
+  The thread was holding the lock while pushing to a potentially blocking
+  function.  Rewrite the logic and use a deque while we're at it.
+  * Add test for subscription queue behavior
+  Guarantee that the queue drops messages when blocked.
+* Python 3 updates/fixes (`#460 <https://github.com/RobotWebTools/rosbridge_suite/issues/460>`_)
+  * rosbridge_library, rosbridge_server: Update package format
+  Add Python3 conditional dependencies where applicable.
+  * rosbridge_library: Fix pngcompression for Python 3
+  * rosapi: Use catkin_install_python for scripts
+* Fixing wrong header/stamp in published ROS-messsages (`#472 <https://github.com/RobotWebTools/rosbridge_suite/issues/472>`_)
+  When publishing a message to ROS (i.e. incoming from rosbridge_server's perspective), timestamps in the Header attributes all point to the same Time object iff the message contains multiple Header attributes (typically the case if a ROS message contains other ROS messages, e.g. ...Array-types) and rosparam use_sim_time is true.
+* Contributors: Alexey Rogachevskiy, Matt Vollrath, danielmaier
+
+0.11.4 (2020-02-20)
+-------------------
+* Concurrency review (`#458 <https://github.com/RobotWebTools/rosbridge_suite/issues/458>`_)
+  * Safer locking in PublisherConsistencyListener
+  * Safer locking in ros_loader
+  * Print QueueMessageHandler exceptions to stderr
+  * Register before resuming outgoing valve
+  * Don't pause a finished socket valve
+* Add cbor-raw compression (`#452 <https://github.com/RobotWebTools/rosbridge_suite/issues/452>`_)
+  The CBOR compression is already a huge win over JSON or PNG encoding,
+  but it’s still suboptimal in some situations. This PR adds support for
+  getting messages in their raw binary (ROS-serialized) format. This has
+  benefits in the following cases:
+  - Your application already knows how to parse messages in bag files
+  (e.g. using [rosbag.js](https://github.com/cruise-automation/rosbag.js),
+  which means that now you can use consistent code paths for both bags
+  and live messages.
+  - You want to parse messages as late as possible, or in parallel, e.g.
+  only in the thread or WebWorker that cares about the message. Delaying
+  the parsing of the message means that moving or copying the message to
+  the thread is cheaper when its in binary form, since no serialization
+  between threads is necessary.
+  - You only care about part of the message, and don't need to parse the
+  rest of it.
+  - You really care about performance; no conversion between the ROS
+  binary format and CBOR is done in the rosbridge_sever.
+* Fix typos in rosbridge_library's description (`#450 <https://github.com/RobotWebTools/rosbridge_suite/issues/450>`_)
+* Python 3 fix for dict::values (`#446 <https://github.com/RobotWebTools/rosbridge_suite/issues/446>`_)
+  Under Python 3, values() returns a view-like object, and because that object is used outside the mutex, we were getting `RuntimeError: dictionary changed size during iteration` under some circumstances. This creates a copy of the values, restoring the Python 2 behaviour and fixing the problem.
+* Contributors: Jan Paul Posma, Matt Vollrath, Mike Purvis, miller-alex
+
 0.11.3 (2019-08-07)
 -------------------
 
