@@ -2,6 +2,137 @@
 Changelog for package rosbridge_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.13 (2020-12-08)
+--------------------
+
+0.11.12 (2020-11-25)
+--------------------
+
+0.11.11 (2020-11-24)
+--------------------
+* rosbridge_udp now encodes msg to bytes before send (`#537 <https://github.com/RobotWebTools/rosbridge_suite/issues/537>`_)
+  This is required to work with python3 socket library
+* Conversion between bytes and string (`#534 <https://github.com/RobotWebTools/rosbridge_suite/issues/534>`_)
+  As of python3 sockets will input and output byte strings instead of String objects.
+  This commits does the necessary coversions inside the tcp_handler, but it might
+  not be the most thoughtful solution but just what I did to make it work with
+  python3.
+* Contributors: Felix Exner, Karl Oskar Lember
+
+0.11.10 (2020-09-08)
+--------------------
+* Error initialization with tornado. (`#510 <https://github.com/RobotWebTools/rosbridge_suite/issues/510>`_)
+  max_message_size has to be integer when initializating using tornado.
+* Contributors: Carlos Herrero
+
+0.11.9 (2020-05-27)
+-------------------
+* noetic tests and fixes (`#503 <https://github.com/RobotWebTools/rosbridge_suite/issues/503>`_)
+* Contributors: Matt Vollrath
+
+0.11.8 (2020-05-21)
+-------------------
+* Finish protocol in IncomingQueue thread (`#502 <https://github.com/RobotWebTools/rosbridge_suite/issues/502>`_)
+* Contributors: Matt Vollrath
+
+0.11.7 (2020-05-13)
+-------------------
+* Fix backpressure deadlock (`#496 <https://github.com/RobotWebTools/rosbridge_suite/issues/496>`_)
+  * Don't block Subscription.unregister()
+  * Don't add messages to finished queue handler
+  * Decouple incoming WS handling from server thread
+* Added support for None for websocket_external_port (`#494 <https://github.com/RobotWebTools/rosbridge_suite/issues/494>`_)
+* Contributors: Matt Vollrath, pramodhkp
+
+0.11.6 (2020-04-29)
+-------------------
+* Output node parameter (`#481 <https://github.com/RobotWebTools/rosbridge_suite/issues/481>`_)
+* Contributors: Raffaello Bonghi
+
+0.11.5 (2020-04-08)
+-------------------
+* default websocket_external_port to port to mimic behavior in node (`#470 <https://github.com/RobotWebTools/rosbridge_suite/issues/470>`_)
+  fixes bug introduced in `#468 <https://github.com/RobotWebTools/rosbridge_suite/issues/468>`_
+* Default to supporting local files as we had before Autobahn. (`#469 <https://github.com/RobotWebTools/rosbridge_suite/issues/469>`_)
+  For Kinetic 0.10.3 version don't add the allowNullOrigin option.
+  For everything else add it and default to True because that is
+  consistent with the original behaviour of this package.
+  Add websocket_null_origin to launch args
+* Python 3 updates/fixes (`#460 <https://github.com/RobotWebTools/rosbridge_suite/issues/460>`_)
+  * rosbridge_library, rosbridge_server: Update package format
+  Add Python3 conditional dependencies where applicable.
+  * rosbridge_library: Fix pngcompression for Python 3
+  * rosapi: Use catkin_install_python for scripts
+* Fix intermittent test smoke (`#473 <https://github.com/RobotWebTools/rosbridge_suite/issues/473>`_)
+  * Run rosbridge_server websocket tests serial
+  Running these tests in parallel may make them less reliable.
+  * Reduce websocket smoke test load
+  Appears to be failing intermittently due to a client issue.
+  Co-authored-by: Jihoon Lee <jihoonlee.in@gmail.com>
+* Expose autobahn externalPort parameter (`#468 <https://github.com/RobotWebTools/rosbridge_suite/issues/468>`_)
+  * Expose autobahn externalPort parameter
+  * Use ws port as default external port
+  * Include websocket params in launchfile
+* Contributors: Alexey Rogachevskiy, Eduardo Paez, El Jawad Alaa, Matt Vollrath, boilerbots
+
+0.11.4 (2020-02-20)
+-------------------
+* Concurrency review (`#458 <https://github.com/RobotWebTools/rosbridge_suite/issues/458>`_)
+  * Safer locking in PublisherConsistencyListener
+  * Safer locking in ros_loader
+  * Print QueueMessageHandler exceptions to stderr
+  * Register before resuming outgoing valve
+  * Don't pause a finished socket valve
+* Add cbor-raw compression (`#452 <https://github.com/RobotWebTools/rosbridge_suite/issues/452>`_)
+  The CBOR compression is already a huge win over JSON or PNG encoding,
+  but it’s still suboptimal in some situations. This PR adds support for
+  getting messages in their raw binary (ROS-serialized) format. This has
+  benefits in the following cases:
+  - Your application already knows how to parse messages in bag files
+  (e.g. using [rosbag.js](https://github.com/cruise-automation/rosbag.js),
+  which means that now you can use consistent code paths for both bags
+  and live messages.
+  - You want to parse messages as late as possible, or in parallel, e.g.
+  only in the thread or WebWorker that cares about the message. Delaying
+  the parsing of the message means that moving or copying the message to
+  the thread is cheaper when its in binary form, since no serialization
+  between threads is necessary.
+  - You only care about part of the message, and don't need to parse the
+  rest of it.
+  - You really care about performance; no conversion between the ROS
+  binary format and CBOR is done in the rosbridge_sever.
+* Fix Autobahn WebSocket vs. Python 3 (`#451 <https://github.com/RobotWebTools/rosbridge_suite/issues/451>`_)
+  Fixes `#448 <https://github.com/RobotWebTools/rosbridge_suite/issues/448>`_
+* Install scripts with catkin_install_python. (`#449 <https://github.com/RobotWebTools/rosbridge_suite/issues/449>`_)
+* autobahn_websocket.py: Convert BSON to bytes before call to sendMessage (`#443 <https://github.com/RobotWebTools/rosbridge_suite/issues/443>`_)
+  autobahn.websocket.WebSocketServerProtocol.sendMessage asserts whether message is of type bytes, which fails for message of type bson.BSON
+* Autobahn WebSocket server (`#426 <https://github.com/RobotWebTools/rosbridge_suite/issues/426>`_)
+  * Autobahn WebSocket server
+  * Bring back explicit Twisted dependency
+  Still used directly by the UDP handler.
+  * Warn when reactor wasn't running at shutdown hook
+  * More descriptive websocket startup log msg
+  * Remove extreneous OutgoingValve stop log
+  * More comment for OutgoingValve
+  * Fix --address parsing as int
+  * Use Autobahn's ws url creation util method
+  * Backwards compatibility for empty websocket addr
+  This was the default in previous versions, but invalid input to
+  Autobahn.
+  * Factor out websocket onConnect
+  We have access to this information in onOpen.
+  * Add smoke test for rosbridge websocket server
+  * Revert "Use Autobahn's ws url creation util method"
+  This reverts commit 4224671528a03875847918ae7164e672c4ba5fce.
+  This create_url method doesn't exist yet in Ubuntu kinetic.
+  * Preserve RosbridgeWebSocket Tornado ABI
+  * Run rosbridge_websocket tests with ephemeral port
+  Avoid network collisions and unnecessary configuration while testing.
+  * Fix broken test create_url on kinetic
+  * Smokier smoke test
+  Send 100 large messages in each direction to saturate buffers.
+* Contributors: Jan Paul Posma, Matt Vollrath, Mike Purvis, dma307
+
 0.11.3 (2019-08-07)
 -------------------
 * Fixes `#418 <https://github.com/RobotWebTools/rosbridge_suite/issues/418>`_: WebSocketClosedError Spam (`#423 <https://github.com/RobotWebTools/rosbridge_suite/issues/423>`_)

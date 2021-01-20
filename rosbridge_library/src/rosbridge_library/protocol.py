@@ -30,6 +30,9 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import unicode_literals
+from builtins import str
+
 import rospy
 import time
 
@@ -117,7 +120,7 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        self.buffer = self.buffer + message_string
+        self.buffer = self.buffer + str(message_string)
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer

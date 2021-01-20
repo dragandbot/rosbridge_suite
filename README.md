@@ -27,12 +27,12 @@ A rosbridge client is a program that communicates with rosbridge using its JSON 
  * [jrosbridge](https://github.com/WPI-RAIL/jrosbridge) - A Java API, which communicates with rosbridge over WebSockets.
  * [roslibpy](https://github.com/gramaziokohler/roslibpy) - A Python API, which communicates with rosbridge over WebSockets.
 
+### Development
+
+You can use the `run_docker.sh` script to get an interactive shell in a container with rosbridge in a catkin workspace. The sources will be mounted read-only in the container, so any changes you make outside the container will be reflected inside. Host networking will be used so you can run interact with ROS nodes and access the server from outside the container. You can use this to quickly iterate without having to rebuild the image for most changes.
+
 ### License
 rosbridge_suite is released with a BSD license. For full terms and conditions, see the [LICENSE](LICENSE) file.
 
 ### Authors
 See the [AUTHORS](AUTHORS.md) file for a full list of contributors.
-
-### Troubleshooting
-
-See the [TROUBLESHOOTING](TROUBLESHOOTING.md) doc for common problems and solutions.
