@@ -165,6 +165,10 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
     unregister_timeout = 10.0               # seconds
     bson_only_mode = False
 
+    remote_control_allowed = False
+
+    control_ip = ""
+
     def onOpen(self):
         cls = self.__class__
         parameters = {
@@ -175,7 +179,8 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             "bson_only_mode": cls.bson_only_mode
         }
         try:
-            self.protocol = RosbridgeProtocol(cls.client_id_seed, parameters=parameters)
+            self.peer = self.transport.getPeer().host
+            self.protocol = RosbridgeProtocol(cls.client_id_seed, self.peer, parameters=parameters)
             self.incoming_queue = IncomingQueue(self.protocol)
             self.incoming_queue.start()
             producer = OutgoingValve(self)
@@ -186,7 +191,6 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
             cls.client_id_seed += 1
             cls.clients_connected += 1
             self.client_id = uuid.uuid4()
-            self.peer = self.transport.getPeer().host
             if cls.client_manager:
                 cls.client_manager.add_client(self.client_id, self.peer)
 
@@ -201,6 +205,7 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
         if not binary:
             message = message.decode('utf-8')
         # check if we need to authenticate
+        self.protocol.set_control(cls.remote_control_allowed, cls.control_ip)
         if cls.authenticate and not self.authenticated:
             try:
                 if cls.bson_only_mode:
@@ -253,3 +258,19 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
         rospy.loginfo("Client disconnected. %d clients total.", cls.clients_connected)
 
         self.incoming_queue.finish()
+
+    @staticmethod
+    def add_to_block_list(data):
+        rospy.logerr(data)
+        remote_only_topics_diff = [topic for topic in data.remote_only_topics if topic not in RosbridgeProtocol.remote_only_topics]
+        RosbridgeProtocol.remote_only_topics.extend(remote_only_topics_diff)
+
+        remote_only_services_diff = [service for service in data.remote_only_services if service not in RosbridgeProtocol.remote_only_services]
+        RosbridgeProtocol.remote_only_services.extend(remote_only_services_diff)
+
+        local_only_topics_diff = [topic for topic in data.local_only_topics if topic not in RosbridgeProtocol.local_only_topics]
+        RosbridgeProtocol.local_only_topics.extend(local_only_topics_diff)
+
+        local_only_services_diff = [service for service in data.local_only_services if service not in RosbridgeProtocol.local_only_services]
+        RosbridgeProtocol.local_only_services.extend(local_only_services_diff)
+        RosbridgeProtocol.blocklist_version += 1
