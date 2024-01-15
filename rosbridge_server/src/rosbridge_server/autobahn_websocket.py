@@ -261,7 +261,6 @@ class RosbridgeWebSocket(WebSocketServerProtocol):
 
     @staticmethod
     def add_to_block_list(data):
-        rospy.logerr(data)
         remote_only_topics_diff = [topic for topic in data.remote_only_topics if topic not in RosbridgeProtocol.remote_only_topics]
         RosbridgeProtocol.remote_only_topics.extend(remote_only_topics_diff)
 

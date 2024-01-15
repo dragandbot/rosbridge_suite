@@ -320,11 +320,9 @@ if __name__ == "__main__":
             rospy.sleep(retry_startup_delay)
 
     def remote_control_changed(msg):
-        rospy.logerr("remote change")
         RosbridgeWebSocket.remote_control_allowed = msg.data
 
     def control_ip_changed(msg):
-        rospy.logerr("control change")
         RosbridgeWebSocket.control_ip = msg.data
 
     def add_to_block_list(msg):
