@@ -95,115 +95,11 @@ class Protocol:
     control_ip = ""
 
     blocklist_version = 0
-    local_only_services = [
-        "/commands_action_server/set_collision_checking",
-        "/commands_action_server/set_move_despite_collision",
-        "/commands_action_server/set_virtual_walls",
 
-        "/dnb_remote_robot_control/heartbeat",
-        "/dnb_remote_robot_control/set_heartbeat_timeout",
-
-        "/remotecontrol_activate",
-        "/remotecontrol_deactivate",
-        "/remotecontrol_get_cartesian_goal_options",
-        "/remotecontrol_markers_base/tunneled/get_init",
-        "/remotecontrol_markers_tool/tunneled/get_init",
-        "/remotecontrol_markers_world/tunneled/get_init",
-        "/remotecontrol_set_cartesian_goal_option",
-        "/remotecontrol_set_virtual_walls",
-        "/remotecontrol_start_move_cartesian",
-        "/remotecontrol_start_move_joints",
-        "/remotecontrol_stop_move",
-
-        "/local_ops_allowed"
-    ]
-
-    local_only_topics = [
-        "/command_result",
-        "/commands_action_server/cancel",
-        "/commands_action_server/goal",
-
-        "/heartbeat",
-
-        "/remotecontrol_markers_base/feedback",
-        "/remotecontrol_markers_base/tunneled/update",
-        "/remotecontrol_markers_base/update",
-        "/remotecontrol_markers_base/update_full",
-        "/remotecontrol_markers_tool/feedback",
-        "/remotecontrol_markers_tool/tunneled/update",
-        "/remotecontrol_markers_tool/update",
-        "/remotecontrol_markers_tool/update_full",
-        "/remotecontrol_markers_world/feedback",
-        "/remotecontrol_markers_world/tunneled/update",
-        "/remotecontrol_markers_world/update",
-        "/remotecontrol_markers_world/update_full"
-    ]
-
-    remote_only_services = [
-        "/clear_robot_error",
-
-        "/dnb_datastore/change_item_group",
-        "/dnb_datastore/delete_all_values",
-        "/dnb_datastore/delete_namespace",
-        "/dnb_datastore/delete_unused_external_values",
-        "/dnb_datastore/delete_value",
-        "/dnb_datastore/register_external_source",
-        "/dnb_datastore/reset_group",
-        "/dnb_datastore/set_description",
-        "/dnb_datastore/set_display_title",
-        "/dnb_datastore/set_hidden",
-        "/dnb_datastore/set_logger_level",
-        "/dnb_datastore/set_operator_readonly",
-        "/dnb_datastore/set_type",
-        "/dnb_datastore/set_value",
-
-        "/dnb_executor/change_stop_on_robot_error",
-        "/dnb_executor/delete_program",
-        "/dnb_executor/load_program",
-        "/dnb_executor/load_program_by_title",
-        "/dnb_executor/pause",
-        "/dnb_executor/resume",
-        "/dnb_executor/step_by_step/execute",
-        "/dnb_executor/step_by_step/start",
-        "/dnb_executor/step_by_step/stop",
-        "/dnb_executor/stop",
-        "/dnb_executor/update_program_cache",
-
-        "/dnb_grid_manager/reset_grid",
-        "/dnb_grid_manager/reset_namespaced_grid",
-        "/dnb_grid_manager/set_zoffset",
-        "/dnb_grid_manager2/delete_grid",
-        "/dnb_grid_manager2/initialize_grid",
-        "/dnb_grid_manager2/set_cell_content",
-        "/dnb_grid_manager2/set_grid_content",
-
-        "/dnb_tool_manager/remove_tool",
-        "/dnb_tool_manager/select_tool",
-
-        "/human_interaction/human_answer",
-        "/human_interaction/info_close",
-
-        "/power_robot",
-
-        "/robot/set_all_ios_simulated",
-        "/robot/set_digital_ios",
-        "/robot/set_io_display_title",
-        "/robot/set_io_simulated",
-
-        "/scale_speed",
-        "/set_io",
-        "/stop_robot_right_now",
-        "/unpower_robot",
-
-        "/remote_ops_allowed"    
-    ]
-
-    remote_only_topics = [
-        "/dnb_executor/execute/cancel",
-        "/dnb_executor/execute/goal"
-
-        "/remote_control_allowed"
-    ]
+    local_only_services = []
+    local_only_topics = []
+    remote_only_services = []
+    remote_only_topics = []
 
     blocked_ops = {}
 
