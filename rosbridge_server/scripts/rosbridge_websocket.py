@@ -34,6 +34,8 @@
 from __future__ import print_function
 import rospy
 import sys
+from std_msgs.msg import Bool, String
+from rosbridge_msgs.srv import AddToBlocklist
 
 from twisted.python import log
 from twisted.internet import reactor, ssl
@@ -49,6 +51,7 @@ from rosbridge_server import ClientManager
 from rosbridge_server.autobahn_websocket import RosbridgeWebSocket
 from rosbridge_server.util import get_ephemeral_port
 
+from rosbridge_library.protocol import Protocol
 from rosbridge_library.capabilities.advertise import Advertise
 from rosbridge_library.capabilities.publish import Publish
 from rosbridge_library.capabilities.subscribe import Subscribe
@@ -316,5 +319,25 @@ if __name__ == "__main__":
                           " Retrying in " + str(retry_startup_delay) + "s.")
             rospy.sleep(retry_startup_delay)
 
+    def remote_control_changed(msg):
+        RosbridgeWebSocket.remote_control_allowed = msg.data
+
+    def control_ip_changed(msg):
+        RosbridgeWebSocket.control_ip = msg.data
+
+    def add_to_block_list(msg):
+        try:
+            RosbridgeWebSocket.add_to_block_list(msg)
+        except Exception:
+            return False
+        return True
+
+
+    rospy.Subscriber("remote_control_allowed", Bool, remote_control_changed)
+    rospy.Subscriber("control_ip", String, control_ip_changed)
+    s = rospy.Service('add_to_block_list', AddToBlocklist, add_to_block_list)
     rospy.on_shutdown(shutdown_hook)
     reactor.run()
+
+    
+

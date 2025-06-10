@@ -38,6 +38,7 @@ from rosbridge_library.internal.exceptions import MissingArgumentException
 
 from rosbridge_library.capabilities.fragmentation import Fragmentation
 from rosbridge_library.util import json, bson
+from copy import deepcopy
 
 
 def is_number(s):
@@ -46,7 +47,6 @@ def is_number(s):
         return True
     except ValueError:
         return False
-
 
 def has_binary(obj):
     """ Returns True if obj is a binary or contains a binary attribute
@@ -59,7 +59,6 @@ def has_binary(obj):
         return any(has_binary(obj[item]) for item in obj)
 
     return isinstance(obj, bson.binary.Binary)
-
 
 class Protocol:
     """ The interface for a single client to interact with ROS.
@@ -92,7 +91,19 @@ class Protocol:
 
     parameters = None
 
-    def __init__(self, client_id):
+    remote_control_allowed = True
+    control_ip = ""
+
+    blocklist_version = 0
+
+    local_only_services = []
+    local_only_topics = []
+    remote_only_services = []
+    remote_only_topics = []
+
+    blocked_ops = {}
+
+    def __init__(self, client_id, client_ip):
         """ Keyword arguments:
         client_id -- a unique ID for this client to take.  Uniqueness is
         important otherwise there will be conflicts between multiple clients
@@ -100,13 +111,17 @@ class Protocol:
 
         """
         self.client_id = client_id
+        self.client_ip = client_ip
         self.capabilities = []
         self.operations = {}
+        self.blocklist_version = 0
 
         if self.parameters:
             self.fragment_size = self.parameters["max_message_size"]
             self.delay_between_messages = self.parameters["delay_between_messages"]
             self.bson_only_mode = self.parameters.get('bson_only_mode', False)
+
+        self._update_blocked_ops()
 
     # added default message_string="" to allow recalling incoming until buffer is empty without giving a parameter
     # --> allows to get rid of (..or minimize) delay between client-side sends
@@ -171,6 +186,9 @@ class Protocol:
 
         # if decoding of buffer failed .. simply return
         if msg is None:
+            return
+
+        if self._msg_blocked(msg):
             return
 
         # process fields JSON-message object that "control" rosbridge
@@ -390,3 +408,46 @@ class Protocol:
             rospy.loginfo(stdout_formatted_msg)
         else:
             rospy.logdebug(stdout_formatted_msg)
+
+
+    def _update_blocked_ops(self):
+        cls = self.__class__
+        if not self.control_ip or self.control_ip == "" or self.control_ip == self.client_ip:
+            self.blocked_ops = {}
+            return
+        blocked = {}
+        services = deepcopy(cls.local_only_services)
+        topics = deepcopy(cls.local_only_topics)
+        if not self.remote_control_allowed:
+            services.extend(cls.remote_only_services)
+            topics.extend(cls.remote_only_topics)
+        if len(services) > 0:
+            blocked['call_service'] = {
+                "field": "service",
+                "values": services
+            }
+        if len(topics) > 0:
+            blocked['publish'] = {
+                "field": "topic",
+                "values": topics
+            }
+        self.blocklist_version = cls.blocklist_version
+        self.blocked_ops = blocked
+
+    def _msg_blocked(self, msg):
+        if 'op' not in msg:
+            return False
+        op = msg['op']
+        if op in self.blocked_ops:
+            values = self.blocked_ops[op]['values']
+            field = self.blocked_ops[op]['field']
+            if field in msg and msg[field] in values:
+                return True
+
+        return False
+
+    def set_control(self, remote_allowed, ip):
+        if self.remote_control_allowed != remote_allowed or self.control_ip != ip or self.blocklist_version != self.__class__.blocklist_version:
+            self.remote_control_allowed = remote_allowed
+            self.control_ip = ip
+            self._update_blocked_ops()

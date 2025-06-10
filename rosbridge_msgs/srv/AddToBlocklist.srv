@@ -1,0 +1,6 @@
+string[] local_only_services
+string[] local_only_topics
+string[] remote_only_services
+string[] remote_only_topics
+---
+bool success
