@@ -1,7 +1,18 @@
-DEVEL
- *
+# Changelog
+All notable changes to this project will be documented in this file.
 
-2014-03-14 - **0.5.2**
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.12.0] - 2025-12-15
+
+### Added
+
+- Check for Single Point Of Control (SPOC).
+
+***
+
+## [0.5.2] - 2014-03-14
  * Added error messages on result=False When call_service returns False as result, values contains the error message. (Pro)
  * Specific IP adress binding using roslaunch (Steffel Fenix)
  * support publishing non-ascii letters (furushchev)
